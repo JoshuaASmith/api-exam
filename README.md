@@ -5,6 +5,6 @@
 
 ###### Shoes are addable to the database by using a POST and using the path /shoes.
 
-###### Shoes are queryable to see what is in stock by using a GET and using the path /shoes.
+###### Shoes are queryable to see what is in stock by using a GET and using the path /shoe.
 
 ###### Shoes are also searchable by ID by performing a GET and using the path /shoe/:id.

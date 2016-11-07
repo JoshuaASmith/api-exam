@@ -6,8 +6,6 @@ var listShoeTestCallback = function(err, response) {
     console.log(JSON.stringify(response.rows, null, 2))
 }
 
-var sortBy = ''
-var startKey = ''
-var limit = 2
+var sortBy = 'shoeSort'
 
-dalNoSQL.listShoes(sortBy, startKey, limit, listShoeTestCallback)
+dalNoSQL.listShoes(sortBy, listShoeTestCallback)

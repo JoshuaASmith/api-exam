@@ -10,7 +10,8 @@ var dal = {
     listShoes: listShoes,
     getShoe: getShoe,
     createShoes: createShoes,
-    createView: createView
+    createView: createView,
+    listShoe: listShoe
 }
 
 function getShoeByID(id, callback) {
@@ -28,50 +29,40 @@ function getShoeByID(id, callback) {
     }
 }
 
-function queryDB(sortBy, startKey, limit, callback) {
+function listShoe(couchView, type, callback) {
+    db.query(couchView, {
+        include_docs: true,
+        key: type
+    }, function(err, queryRows) {
+        if (err) {
+            return callback(err)
+        }
+        if (queryRows) {
+            callback(null, queryRows.rows.map(row => row.doc))
+            //callback(null, queryRows.rows.map(row => row.doc.team))
+            //callback(null, queryRows)
+        }
+    })
+}
+
+function queryDB(sortBy, callback) {
     if (typeof sortBy == 'undefined' || sortBy === null) {
         return callback(new Error('400 Missing data for query'), null)
     } else {
-        limit = startKey !== ''
-            ? limit + 1
-            : limit
-        console.log("sortBy:", sortBy, " startKey: ", startKey, " limit: ", limit)
+        console.log("sortBy:", sortBy)
         db.query(sortBy, {
-            startKey: '',
-            limit: limit,
             include_docs: true
         }, function(err, response) {
             if (err) {
                 return callback(err)
             }
             if (response) {
-                if (startKey !== '') {
-                    response.rows.shift()
-                }
                 callback(null, response.rows.map(row => row.doc))
             }
         })
     }
 }
 
-// function listShoes(sortBy, startKey, limit, callback) {
-//     console.log("sortBy:", sortBy, " startKey: ", startKey, " limit: ", limit)
-//     db.query(sortBy, {
-//         startKey: '',
-//         limit: limit,
-//         include_docs: true
-//     }, function(err, response) {
-//         if (err) {
-//             return callback(err)
-//         }
-//         if (response) {
-//             if (startKey !== '') {
-//                 response.rows.shift()
-//             }
-//             callback(null, response.rows.map(convertPersons))
-//         }
-//     })
-// }
 function listShoes(sortBy, startKey, limit, callback) {
     queryDB(sortBy, startKey, limit, callback)
 }

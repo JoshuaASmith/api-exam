@@ -3,11 +3,10 @@ var app = express()
 const dal = require('../DAL/no-sql.js')
 var http = require('http')
 const HTTPError = require('node-http-error')
-// body parser?
+const port = process.env.PORT || 4000
 var bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
 app.use(bodyParser.json())
-const port = process.env.PORT || 4000
 /////////////////////////////////////
 /////////// GET FUNCTIONS ///////////
 /////////////////////////////////////
@@ -24,16 +23,6 @@ app.get('/shoe/:id', function(req, res, next) {
             res.send(data)
         }
     })
-})
-
-app.get('*', function(req, res) {
-    var body = '<h1>404 - Page Not Found</h1>'
-    body += '<ul>'
-    body += '<li>METHOD: ' + req.method + '</li>'
-    body += '<li>PATH: ' + req.path + '</li>'
-    body += '<li>QUERY: ' + JSON.stringify(req.query, null, 2) + '</li>'
-    body += '</ul>'
-    res.send(body)
 })
 
 /////////////////////////////////////
@@ -54,29 +43,10 @@ app.post('/shoes', function(req, res, next) {
 /////////// LIST FUNCTIONS //////////
 /////////////////////////////////////
 
-app.get('/shoes', function(req, res, next) {
-    const sortByParam = 'shoeSort'
-    const sortBy = sortByParam
-    const sortToken = req.query.sorttoken || ''
-    const limit = req.query.limit || 5
-    dal.listShoes(sortBy, sortToken, limit, function callback(err, response) {
-        if (err) {
-            return next(new HTTPError('400 No Data'))
-        }
-        if (data) {
-            console.log('GET' + req.path, " query: ", req.query, data)
-            res.append('Content-type', 'application/json')
-            res.status(200).send(data)
-        }
-    })
-})
-
-app.get('/shoes', function(req, res, next) {
-    const sortByParam = req.query.sortBy || 'shoeSort'
-    const sortBy = sortByParam
-    const sortToken = req.query.sortToken || ''
-    const limit = req.query.limit || 5
-    dal.listShoes(sortBy, sortKey, limit, function callback(err, data) {
+app.get('/shoe', function(req, res, next) {
+    const couchView = 'shoeSort'
+    const type = req.params.type
+    dal.listShoe(couchView, type, function callback(err, data) {
         if (err) {
             var responseError = buildResponseError(err)
             return next(new HTTPError(responseError.status, responseError.message, responseError))
@@ -93,32 +63,6 @@ app.get('/shoes', function(req, res, next) {
 ///////////////////////////////////////
 /////////// HELPER FUNCTIONS //////////
 ///////////////////////////////////////
-
-function getPlayerSortBy(type, dal) {
-    var sortBy;
-    var options = {
-        'lastName': function() {
-            sortBy = dal === 'nosql'
-                ? 'playerSort'
-                : 'vPerson';
-        },
-        'email': function() {
-            //email
-            sortBy = dal === 'nosql'
-                ? 'emailView'
-                : 'vPersonEmail';
-        },
-        'default': function() {
-            sortBy = dal === 'nosql'
-                ? 'lastNameView'
-                : 'vPerson';
-        }
-    };
-    // invoke it
-    (options[type] || options['default'])();
-    // return a String with chosen sort
-    return sortBy;
-}
 
 function callback(req, res, next) {
     return function(err, response) {
@@ -156,6 +100,16 @@ function buildResponseError(err, req) {
     return errormsg
 }
 
+app.get('*', function(req, res) {
+    var body = '<h1>404 - Page Not Found</h1>'
+    body += '<ul>'
+    body += '<li>METHOD: ' + req.method + '</li>'
+    body += '<li>PATH: ' + req.path + '</li>'
+    body += '<li>QUERY: ' + JSON.stringify(req.query, null, 2) + '</li>'
+    body += '</ul>'
+    res.send(body)
+})
+
 app.use(function(err, req, res, next) {
     console.log(err)
     res.status(err.status || 500)
@@ -163,7 +117,7 @@ app.use(function(err, req, res, next) {
 })
 
 app.get('/bad', function(req, res, next) {
-    var firstErr = new HTTPError(500, 'error', {m: "Please try another route"}) //can add extra info for dev
+    var firstErr = new HTTPError(500, 'error', {m: "Please try another route"})
     return next(firstErr)
 })
 
