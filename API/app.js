@@ -61,6 +61,33 @@ app.get('/shoe', function(req, res, next) {
 })
 
 ///////////////////////////////////////
+/////////// DELETE FUNCTIONS //////////
+///////////////////////////////////////
+
+app.delete('/shoe/:id', function(req, res, next) {
+    const shoeID = req.params.id;
+    dal.getShoe(shoeID, function callback(err, data) {
+        if (err) {
+            var responseError = buildResponseError(err)
+            return next(new HTTPError(responseError.status, responseError.message))
+        }
+        if (data) {
+            dal.deleteShoe(data, function callback(err, deleteddata) {
+                if (err) {
+                    var responseError = buildResponseError(err)
+                    return next(new HTTPError(responseError.status, responseError.message))
+                }
+                if (deleteddata) {
+                    console.log("DELETE " + req.path, deleteddata)
+                    res.append('Content-type', 'application/json')
+                    res.status(200).send(deleteddata)
+                }
+            })
+        }
+    })
+})
+
+///////////////////////////////////////
 /////////// HELPER FUNCTIONS //////////
 ///////////////////////////////////////
 

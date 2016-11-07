@@ -7,11 +7,11 @@ const urlFormat = require('url').format
 const db = new PouchDB(urlFormat(config.get("couch")))
 
 var dal = {
-    listShoes: listShoes,
     getShoe: getShoe,
     createShoes: createShoes,
     createView: createView,
-    listShoe: listShoe
+    listShoe: listShoe,
+    deleteShoe: deleteShoe
 }
 
 function getShoeByID(id, callback) {
@@ -43,28 +43,6 @@ function listShoe(couchView, type, callback) {
             //callback(null, queryRows)
         }
     })
-}
-
-function queryDB(sortBy, callback) {
-    if (typeof sortBy == 'undefined' || sortBy === null) {
-        return callback(new Error('400 Missing data for query'), null)
-    } else {
-        console.log("sortBy:", sortBy)
-        db.query(sortBy, {
-            include_docs: true
-        }, function(err, response) {
-            if (err) {
-                return callback(err)
-            }
-            if (response) {
-                callback(null, response.rows.map(row => row.doc))
-            }
-        })
-    }
-}
-
-function listShoes(sortBy, startKey, limit, callback) {
-    queryDB(sortBy, startKey, limit, callback)
 }
 
 function getShoe(id, callback) {
@@ -103,9 +81,15 @@ function createView(designDoc, callback) {
     }
 }
 
-var convertPersons = function(queryRow) {
-    queryRow.doc.sortToken = queryRow.key
-    return queryRow.doc
+function deleteShoe(data, callback) {
+    db.remove(data, function(err, response) {
+        if (err) {
+            return callback(err)
+        }
+        if (response) {
+            return callback(null, response)
+        }
+    })
 }
 
 module.exports = dal
