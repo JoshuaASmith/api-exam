@@ -1,0 +1,33 @@
+{
+  "name": "api-exam",
+  "version": "1.0.0",
+  "description": "Test API Exam- Shoes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoshuaASmith/api-exam.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JoshuaASmith/api-exam/issues"
+  },
+  "homepage": "https://github.com/JoshuaASmith/api-exam#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "cors": "^2.8.1",
+    "express": "^4.14.0",
+    "mysql": "^2.12.0",
+    "node-http-error": "^1.0.0",
+    "node-uuid": "^1.4.7",
+    "pouchdb-http": "^6.0.2",
+    "pouchdb-mapreduce": "^6.0.7",
+    "server-summary": "^6.0.1",
+    "url": "^0.11.0",
+    "zero-config": "^7.0.2"
+  }
+}
