@@ -8,35 +8,76 @@ const db = new PouchDB(urlFormat(config.get("couch")))
 
 var dal = {
     listShoes: listShoes,
-    getShoes: getShoes,
+    getShoe: getShoe,
     createShoes: createShoes,
     createView: createView
 }
 
-function listShoes(sortBy, startKey, limit, callback) {
-    db.query(sortBy, {
-        startKey: '',
-        limit: limit,
-        include_docs: true
-    }, function(err, response) {
-        if (err) {
-            return callback(err)
-        }
-        if (response) {
-            callback(null, response.rows.map(row => row.doc))
-        }
-    })
+function getShoeByID(id, callback) {
+    if (typeof id == 'undefined' || id === null) {
+        return callback(new Error('400Missing data for update'))
+    } else {
+        db.get(id, function(err, response) {
+            if (err) {
+                return callback(err)
+            }
+            if (response) {
+                return callback(null, response)
+            }
+        })
+    }
 }
 
-function getShoes(id, callback) {
-    db.get(id, function(err, response) {
-        if (err) {
-            return callback(err)
-        }
-        if (response) {
-            return callback(response)
-        }
-    })
+function queryDB(sortBy, startKey, limit, callback) {
+    if (typeof sortBy == 'undefined' || sortBy === null) {
+        return callback(new Error('400 Missing data for query'), null)
+    } else {
+        limit = startKey !== ''
+            ? limit + 1
+            : limit
+        console.log("sortBy:", sortBy, " startKey: ", startKey, " limit: ", limit)
+        db.query(sortBy, {
+            startKey: '',
+            limit: limit,
+            include_docs: true
+        }, function(err, response) {
+            if (err) {
+                return callback(err)
+            }
+            if (response) {
+                if (startKey !== '') {
+                    response.rows.shift()
+                }
+                callback(null, response.rows.map(row => row.doc))
+            }
+        })
+    }
+}
+
+// function listShoes(sortBy, startKey, limit, callback) {
+//     console.log("sortBy:", sortBy, " startKey: ", startKey, " limit: ", limit)
+//     db.query(sortBy, {
+//         startKey: '',
+//         limit: limit,
+//         include_docs: true
+//     }, function(err, response) {
+//         if (err) {
+//             return callback(err)
+//         }
+//         if (response) {
+//             if (startKey !== '') {
+//                 response.rows.shift()
+//             }
+//             callback(null, response.rows.map(convertPersons))
+//         }
+//     })
+// }
+function listShoes(sortBy, startKey, limit, callback) {
+    queryDB(sortBy, startKey, limit, callback)
+}
+
+function getShoe(id, callback) {
+    getShoeByID(id, callback)
 }
 
 function createShoes(data, callback) {
@@ -69,6 +110,11 @@ function createView(designDoc, callback) {
             }
         })
     }
+}
+
+var convertPersons = function(queryRow) {
+    queryRow.doc.sortToken = queryRow.key
+    return queryRow.doc
 }
 
 module.exports = dal

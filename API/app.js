@@ -12,8 +12,18 @@ const port = process.env.PORT || 4000
 /////////// GET FUNCTIONS ///////////
 /////////////////////////////////////
 
-app.get('/shoes/:id', function(req, res, next) {
-    dal.getShoes
+app.get('/shoe/:id', function(req, res, next) {
+    const shoeID = req.params.id
+    console.log("shoe id is: ", shoeID)
+    dal.getShoe(shoeID, function(err, data) {
+        if (err) {
+            return next(new HTTPError('400 No Shoe Found'))
+        }
+        if (data) {
+            res.append('Content-type', 'application/json')
+            res.send(data)
+        }
+    })
 })
 
 app.get('*', function(req, res) {
@@ -29,8 +39,16 @@ app.get('*', function(req, res) {
 /////////////////////////////////////
 /////////// POST FUNCTIONS //////////
 /////////////////////////////////////
-app.post('/shoes', function(req, res) {
-    dal.createShoes
+app.post('/shoes', function(req, res, next) {
+    console.log(req.body)
+    dal.createShoes(req.body, function(err, data) {
+        if (err) {
+            return next(new HTTPError('400 No Data to Add'))
+        }
+        if (data) {
+            res.send(data)
+        }
+    })
 })
 /////////////////////////////////////
 /////////// LIST FUNCTIONS //////////
@@ -53,9 +71,54 @@ app.get('/shoes', function(req, res, next) {
     })
 })
 
+app.get('/shoes', function(req, res, next) {
+    const sortByParam = req.query.sortBy || 'shoeSort'
+    const sortBy = sortByParam
+    const sortToken = req.query.sortToken || ''
+    const limit = req.query.limit || 5
+    dal.listShoes(sortBy, sortKey, limit, function callback(err, data) {
+        if (err) {
+            var responseError = buildResponseError(err)
+            return next(new HTTPError(responseError.status, responseError.message, responseError))
+        }
+        if (data) {
+            console.log('GET', + req.path, ' query: ', req.query, data)
+            res.append('Content-type', 'application/json')
+            res.status(200).send(data)
+
+        }
+    })
+})
+
 ///////////////////////////////////////
 /////////// HELPER FUNCTIONS //////////
 ///////////////////////////////////////
+
+function getPlayerSortBy(type, dal) {
+    var sortBy;
+    var options = {
+        'lastName': function() {
+            sortBy = dal === 'nosql'
+                ? 'playerSort'
+                : 'vPerson';
+        },
+        'email': function() {
+            //email
+            sortBy = dal === 'nosql'
+                ? 'emailView'
+                : 'vPersonEmail';
+        },
+        'default': function() {
+            sortBy = dal === 'nosql'
+                ? 'lastNameView'
+                : 'vPerson';
+        }
+    };
+    // invoke it
+    (options[type] || options['default'])();
+    // return a String with chosen sort
+    return sortBy;
+}
 
 function callback(req, res, next) {
     return function(err, response) {
