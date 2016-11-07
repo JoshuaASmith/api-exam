@@ -11,6 +11,7 @@ var dal = {
     createShoes: createShoes,
     createView: createView,
     listShoe: listShoe,
+    updateShoe: updateShoe,
     deleteShoe: deleteShoe
 }
 
@@ -79,6 +80,17 @@ function createView(designDoc, callback) {
             }
         })
     }
+}
+
+function updateShoe(data, callback) {
+    db.put(data, function(err, response) {
+        if (err) {
+            return callback(err)
+        }
+        if (response) {
+            return callback(null, response)
+        }
+    })
 }
 
 function deleteShoe(data, callback) {

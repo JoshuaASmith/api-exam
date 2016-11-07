@@ -39,6 +39,33 @@ app.post('/shoes', function(req, res, next) {
         }
     })
 })
+
+/////////////////////////////////////
+/////////// POST FUNCTIONS //////////
+/////////////////////////////////////
+
+app.put('/shoe/:id', function(req, res, next) {
+    dal.getShoe(req.params.id, function callback(err, data) {
+        if (err) {
+            var responseError = buildResponseError(err)
+            return next(new HTTPError(responseError.status, responseError.message))
+        }
+        if (data) {
+            req.body["_id"] = data["_id"]
+            req.body["_rev"] = data["_rev"]
+        }
+        dal.updateShoe(req.body, function(err, data) {
+            if (err) {
+                return next(new HTTPError('400 Data Error'))
+            }
+            if (data) {
+                res.append('Content-type', 'application/json')
+                res.status(200).send(data)
+            }
+        })
+    })
+})
+
 /////////////////////////////////////
 /////////// LIST FUNCTIONS //////////
 /////////////////////////////////////
